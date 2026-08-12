@@ -19,8 +19,8 @@ rebel red (`#ff2e2e`) and caution yellow (`#ffd400`).
 ## 2. Current state — DONE
 
 - [x] Full page built in `index.html` (~697 lines, styles + JS inline)
-- [x] New logo asset: chrome `CR` badge, hand-drawn SVG (`assets/cr-mark.svg`) — replaces the
-      old low-res GIF. Reused in header (top-middle), loader, footer, favicon, and 3D coin.
+- [x] ~~New logo asset: chrome `CR` badge~~ **SUPERSEDED 2026-08-12 — see "The mark" below.**
+      The CR monogram was wrong; the real Captain Rebel mark is the **chain**.
 - [x] Loading screen: real image-preload progress + chrome sweep + percent counter + clip-path wipe
 - [x] 3D spinning chrome coin (Three.js r128) in the hero — PMREM studio env map for real
       metallic reflections, badge engraved via canvas roughness/bump maps, red+yellow rim lights,
@@ -69,8 +69,9 @@ captain-rebel/
 ### Where to edit things (all inside `index.html`)
 - **Products** → `const PRODUCTS = [...]` near the top of the `<script>`. Each entry:
   `{n:name, p:price, c:category('hoodie'|'tee'|'bottoms'), u:shopify-handle, i:cdn-image-path}`.
-- **3D coin engraving** → `makeBadgeCanvas()` function (draws CR monogram, star, ring text, reeded edge).
-- **Coin material / spin / lights** → the `/* 3D CHROME COIN */` block (search `chrome =`, `spin`, rim lights `redL`/`yelL`).
+- **The 3D chain** → `const CHAIN` (contour data) then `shapes` → `ExtrudeGeometry`.
+  `makeBadgeCanvas()` and the coin's `CylinderGeometry`/`CircleGeometry` are **gone**.
+- **Chain material / spin / lights** → same block (search `chainMesh`, `spin`, rim lights `redL`/`yelL`).
 - **Loader timing/behavior** → the `/* loader */` block (`PRELOAD`, `tickLoader()`).
 - **Colors** → CSS `:root` variables at the very top of `<style>`.
 - **Fonts** → Unbounded (display), Space Grotesk (body), Space Mono (utility), via Google Fonts `<link>`.
@@ -116,6 +117,37 @@ URL in a real browser and check:
 - [ ] Optional: tune coin spin speed / chrome tint per brand feedback
 
 ---
+
+## 4b. THE MARK — read this before touching the logo
+
+**The Captain Rebel mark is a CHAIN — two interlocking open C-links on a ~35° diagonal.**
+It is NOT a "CR" monogram. An earlier session invented a CR badge and shipped it in every
+logo slot; Khris caught it and it has been reverted.
+
+- **Source of truth:** the store's own animated logo,
+  `https://captainrebelclothing.com/cdn/shop/files/3dgifmaker78319.gif` — 391×391, 150 frames.
+  Frame 0 is face-on. Frame 38 is a thin vertical line, which proves the mark is a **flat
+  plane spinning on its vertical axis** — that is the brand's canonical motion.
+- **How the vector was made:** auto-traced from that GIF (marching squares → RDP →
+  Catmull-Rom → cubic bezier), **not redrawn by eye**. Measured **95.4% IoU** against the
+  source bitmap, 1.5% missed / 3.3% added, all of it sub-pixel edge halo.
+- **Two closed contours, no holes** — the links are open "C" shapes, so each is
+  simply-connected. Do not add `fill-rule="evenodd"`; it is not needed and will break them.
+
+Where it lives now:
+- `#cr-badge` in the inline `<defs>` — **one definition, five `<use>` sites** (loader,
+  header logo, WebGL fallback, manifesto stamp, footer). Edit the def, not the five uses.
+- `#markClip` — the same two paths as a clipPath. The loader's shine sweep is clipped to
+  the mark itself. It used to be clipped to a circle, which only worked because the old
+  badge was a filled disc; on the chain a circular clip leaks the sweep into empty space.
+- `assets/cr-mark.svg` and `favicon.svg` — standalone copies (favicon has the dark bg).
+- `const CHAIN` in the script — the same contours as flat `[x,y,...]` arrays in world
+  units, fed to `THREE.Shape` → `ExtrudeGeometry`. **Regenerate all four together** if the
+  mark ever changes, or they will drift apart.
+
+**Verified 2026-08-12** by building the geometry headlessly against the real three r128:
+24,232 triangles, 0 NaN positions/normals, 4 degenerate tris (0.02%), surface area 24.0,
+bbox 4.010 × 3.162 × 0.410. Still **not** visually confirmed spinning in a real browser.
 
 ## 5. Gotchas / things that weren't obvious
 - The hero `<h1>` is visually hidden (`.sr-only`) with the animated chrome word-art marked

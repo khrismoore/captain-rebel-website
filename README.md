@@ -21,15 +21,11 @@ No build step. Open `index.html` in a browser, or serve it:
 npx serve .
 ```
 
-## Deploy to GitHub Pages
+## Live
 
-```bash
-git remote add origin https://github.com/<your-username>/captain-rebel-website.git
-git branch -M main
-git push -u origin main
-```
+**https://khrismoore.github.io/captain-rebel-website/**
 
-Then in the repo: **Settings → Pages → Source: Deploy from branch → main / root**. The site will be live at `https://<your-username>.github.io/captain-rebel-website/`.
+Deployed from `main` / root via GitHub Pages. Any push to `main` redeploys automatically.
 
 ## Structure
 

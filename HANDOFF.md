@@ -31,9 +31,25 @@ rebel red (`#ff2e2e`) and caution yellow (`#ffd400`).
 - [x] All 17 real products wired: live Shopify CDN imagery + links to product pages and cart,
       filterable by hoodie / tee / bottoms
 - [x] Mobile + desktop responsive; `prefers-reduced-motion` respected
-- [x] Git initialized, one commit on `main`
+- [x] Git history: `7853704` (build) + `e757d2c` (handoff), merged into `main`
+- [x] **Pushed to GitHub and deployed to Pages** — 2026-08-12
 
-**Repo HEAD:** `7853704` — "Captain Rebel chrome redesign: 3D spinning chrome logo, custom loader, web3 UI"
+**Repo:** https://github.com/khrismoore/captain-rebel-website (public)
+**Live:** https://khrismoore.github.io/captain-rebel-website/
+**Repo HEAD:** `8b97f99` — merge of the chrome redesign into the repo scaffold
+
+### Verified on 2026-08-12
+Confirmed by direct check, not assumption:
+- Pages build `built` from commit `8b97f99` in 42.8s, no error
+- Live URL returns HTTP 200; `assets/cr-mark.svg` and `favicon.svg` both 200
+- All 17 `PRODUCTS` entries present in the served HTML
+- Three.js r128 loads (CDN 200) and a WebGL context is available
+- Shopify CDN product images return 200
+
+**NOT yet verified by anyone:** the loader completing, the 3D coin actually
+rendering, and the animations. These were checked in a headless pane where
+`requestAnimationFrame` never fired (0 frames, viewport width 0), so the result
+proves nothing either way. **Open the live URL in a real browser to confirm.**
 
 ---
 
@@ -63,26 +79,35 @@ captain-rebel/
 
 ## 4. NEXT STEPS — what to do in the new session
 
-### A. Get it on GitHub (this becomes the durable handoff)
+### A. ~~Get it on GitHub~~ — DONE 2026-08-12
+Repo is public at https://github.com/khrismoore/captain-rebel-website and Pages
+is serving `main` / root at https://khrismoore.github.io/captain-rebel-website/.
+Pushing to `main` redeploys automatically — no further setup.
+
+To pick this up on another machine:
 ```bash
-# from the unzipped project folder
-git remote add origin https://github.com/<YOUR-USERNAME>/captain-rebel-website.git
-git branch -M main
-git push -u origin main
+git clone https://github.com/khrismoore/captain-rebel-website.git
 ```
-Then enable **Settings → Pages → Deploy from branch → main / root**.
-Live URL: `https://<YOUR-USERNAME>.github.io/captain-rebel-website/` (opens on any phone/desktop).
+The repo IS the handoff — clone it, read this file, you have full context.
 
-> Note: this file already lists `HANDOFF.md` in the repo, so once pushed, ANY future session
-> just clones the repo and reads this to get full context. The repo IS the handoff.
-
-### B. Preview locally + reach it from your phone (same Wi-Fi)
+### B. Preview locally
 ```bash
-npx serve .
-# open the printed http://192.168.x.x:PORT address on your phone
+python -m http.server 8137
+# then http://localhost:8137/index.html
 ```
+For phone-on-same-Wi-Fi, use the machine's LAN IP instead of localhost. On Khris's
+PC a VPN (NordVPN) is often active and will block LAN access — turn it off first.
+Simplest option now that Pages is live: just open the live URL on the phone.
 
-### C. Open ideas / possible follow-ups (not yet done)
+### C. FIRST THING NEXT SESSION — confirm the visuals
+Nobody has yet watched the loader finish or seen the 3D coin spin. Load the live
+URL in a real browser and check:
+- [ ] Loader counts past `000%` and wipes away (it stalls at 000% in headless)
+- [ ] Chrome coin renders and spins in the hero
+- [ ] Product images load from the Shopify CDN
+- [ ] Mobile layout holds up
+
+### D. Open ideas / possible follow-ups (not yet done)
 - [ ] Add a real "Mint / Add to cart" button that deep-links into Shopify checkout
 - [ ] Wire the cart count to the live Shopify cart (currently static `(0)`)
 - [ ] Second page: full lookbook gallery matching the chrome theme
@@ -107,5 +132,7 @@ npx serve .
 
 ## 6. One-line summary for the next session
 > "Continue the Captain Rebel chrome/web3 site. Everything's in `index.html` (self-contained).
->  Repo is committed at HEAD 7853704. Next: push to GitHub + enable Pages, then optionally wire
->  the live Shopify cart and add a lookbook page. Read section 3 for where to edit what."
+>  Repo is public at github.com/khrismoore/captain-rebel-website, HEAD `8b97f99`, live on Pages
+>  at khrismoore.github.io/captain-rebel-website. FIRST: eyeball the live site — the loader and
+>  3D coin have never been visually confirmed by a human. Then optionally wire the live Shopify
+>  cart and add a lookbook page. Read section 3 for where to edit what."

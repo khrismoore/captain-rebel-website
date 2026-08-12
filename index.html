@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CAPTAIN REBEL — Chrome Never Rusts</title>
+<meta name="description" content="Captain Rebel Clothing. Built in the garage, worn at the party. Hoodies, tees and flare sweats — limited runs." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230a0a0c' stroke='%23c9ccd6' stroke-width='6'/%3E%3Ctext x='50' y='64' font-family='Arial Black,Arial' font-weight='900' font-size='40' fill='%23e8eaf0' text-anchor='middle'%3ECR%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=Space+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#08080a;
+  --panel:#0f0f13;
+  --panel-2:#14141a;
+  --chrome-hi:#f4f5f8;
+  --chrome-mid:#b9bcc6;
+  --chrome-lo:#5e6169;
+  --red:#ff2e2e;
+  --yellow:#ffd400;
+  --line:rgba(244,245,248,.10);
+  --line-strong:rgba(244,245,248,.22);
+  --mono:'Space Mono',ui-monospace,monospace;
+  --body:'Space Grotesk',system-ui,sans-serif;
+  --disp:'Unbounded',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{background:var(--void);color:var(--chrome-hi)}
+body{font-family:var(--body);font-size:16px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body.locked{overflow:hidden}
+::selection{background:var(--red);color:#fff}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------- chrome text utility ---------- */
+.chrome-text{
+  background:linear-gradient(180deg,#ffffff 0%,#e8eaf0 22%,#9ba0ad 42%,#585c66 50%,#c7cad4 58%,#f2f3f7 78%,#8f93a0 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.mono{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------- grain overlay ---------- */
+.grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:2000;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 8s steps(10) infinite}
+@keyframes grain{0%,100%{transform:translate(0,0)}10%{transform:translate(-3%,-5%)}30%{transform:translate(4%,2%)}50%{transform:translate(-2%,4%)}70%{transform:translate(5%,-3%)}90%{transform:translate(-4%,1%)}}
+
+/* ---------- custom cursor ---------- */
+.cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:3000;border-radius:50%;transform:translate(-50%,-50%);display:none}
+.cursor-dot{width:6px;height:6px;background:var(--chrome-hi)}
+.cursor-ring{width:34px;height:34px;border:1px solid var(--line-strong);transition:width .25s,height .25s,border-color .25s,background .25s}
+body.cursor-hot .cursor-ring{width:56px;height:56px;border-color:var(--red);background:rgba(255,46,46,.08)}
+@media (pointer:fine){.cursor-dot,.cursor-ring{display:block}}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:5000;background:var(--void);display:flex;align-items:center;justify-content:center;
+  transition:clip-path .9s cubic-bezier(.77,0,.18,1);clip-path:inset(0 0 0 0)}
+#loader.done{clip-path:inset(0 0 100% 0)}
+#loader.gone{display:none}
+.loader-inner{display:flex;flex-direction:column;align-items:center;gap:34px}
+.loader-badge{width:min(190px,44vw);height:auto;filter:drop-shadow(0 0 40px rgba(244,245,248,.12));animation:badgefloat 3.2s ease-in-out infinite}
+@keyframes badgefloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.loader-meta{display:flex;flex-direction:column;align-items:center;gap:12px}
+.loader-bar{width:210px;height:1px;background:var(--line);position:relative;overflow:hidden}
+.loader-bar i{position:absolute;inset:0;background:linear-gradient(90deg,var(--chrome-lo),var(--chrome-hi));transform-origin:left;transform:scaleX(0)}
+.loader-pct{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--chrome-mid)}
+.loader-tag{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--chrome-lo)}
+
+/* chrome sweep on the loader badge */
+.sweepable .sweep-rect{animation:sweep 1.8s linear infinite}
+@keyframes sweep{0%{transform:translateX(-220px)}100%{transform:translateX(220px)}}
+
+/* ---------- header ---------- */
+header{position:fixed;top:0;left:0;right:0;z-index:900;height:72px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(16px,3vw,40px);border-bottom:1px solid var(--line);
+  background:rgba(8,8,10,.55);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+  transform:translateY(-100%);transition:transform .8s cubic-bezier(.22,1,.36,1)}
+body.ready header{transform:translateY(0)}
+.nav-left,.nav-right{display:flex;align-items:center;gap:clamp(14px,2.4vw,32px);flex:1}
+.nav-right{justify-content:flex-end}
+.nav-link{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--chrome-mid);position:relative;padding:6px 0;transition:color .25s}
+.nav-link:hover{color:var(--chrome-hi)}
+.nav-link::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--red);transform:scaleX(0);transform-origin:right;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.nav-link:hover::after{transform:scaleX(1);transform-origin:left}
+.logo-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;transition:transform .3s}
+.logo-center:hover{transform:translate(-50%,-50%) rotate(-8deg) scale(1.06)}
+.logo-center svg{width:46px;height:46px;display:block}
+.cart-count{color:var(--yellow)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;
+  padding:110px 20px 70px}
+.hero-bg-grid{position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:
+   radial-gradient(ellipse 70% 55% at 50% 42%,rgba(255,46,46,.07),transparent 60%),
+   radial-gradient(ellipse 60% 45% at 78% 80%,rgba(255,212,0,.05),transparent 60%),
+   linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,72px 72px,72px 72px;
+  mask-image:radial-gradient(ellipse 90% 80% at 50% 45%,#000 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 45%,#000 30%,transparent 75%)}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--chrome-lo);text-transform:uppercase;display:flex;gap:14px;align-items:center;z-index:5}
+.hero-eyebrow i{width:34px;height:1px;background:var(--line-strong);display:inline-block}
+.hero-title{position:relative;z-index:3;text-align:center;font-family:var(--disp);font-weight:900;
+  font-size:clamp(44px,11.5vw,150px);line-height:.95;letter-spacing:-.01em;text-transform:uppercase;margin-top:14px;user-select:none}
+.hero-title .row{display:block;position:relative}
+.hero-title .row span{display:inline-block;animation:titlesheen 7s linear infinite;background-size:220% 100%}
+.hero-title .row:nth-child(2) span{animation-delay:-2.4s}
+@keyframes titlesheen{0%{background-position:0% 0}100%{background-position:220% 0}}
+.chrome-anim{
+  background-image:linear-gradient(100deg,#8f93a0 0%,#f4f5f8 18%,#585c66 34%,#e8eaf0 46%,#9ba0ad 60%,#ffffff 74%,#6a6e78 90%,#8f93a0 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.coin-stage{position:relative;z-index:4;width:min(460px,82vw);aspect-ratio:1;margin:clamp(-70px,-6vw,-30px) auto clamp(-60px,-5vw,-20px)}
+#coin-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.coin-fallback{position:absolute;inset:12%;display:none;animation:spinfb 6s linear infinite}
+@keyframes spinfb{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+.coin-stage.no3d .coin-fallback{display:block}
+.hero-sub{z-index:5;max-width:520px;text-align:center;color:var(--chrome-mid);font-size:15px}
+.hero-ctas{z-index:5;display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;justify-content:center}
+.btn{position:relative;display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+  padding:16px 30px;border:1px solid var(--line-strong);overflow:hidden;transition:color .3s,border-color .3s;will-change:transform}
+.btn::before{content:"";position:absolute;inset:0;background:var(--chrome-hi);transform:translateY(101%);transition:transform .4s cubic-bezier(.22,1,.36,1);z-index:0}
+.btn:hover::before{transform:translateY(0)}
+.btn span{position:relative;z-index:1;transition:color .3s}
+.btn:hover span{color:var(--void)}
+.btn.hot{border-color:var(--red);background:var(--red)}
+.btn.hot::before{background:var(--chrome-hi)}
+.btn.hot span{color:#fff}
+.btn.hot:hover span{color:var(--void)}
+.scroll-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.34em;color:var(--chrome-lo);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:5}
+.scroll-hint i{width:1px;height:34px;background:linear-gradient(180deg,var(--chrome-lo),transparent);animation:drip 1.8s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}55%{transform:scaleY(1);transform-origin:top}56%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- ticker ---------- */
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--panel);position:relative}
+.ticker-track{display:flex;width:max-content;animation:tick 40s linear infinite;padding:14px 0}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick-item{display:flex;align-items:center;gap:18px;padding:0 26px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--chrome-mid);white-space:nowrap}
+.tick-item b{color:var(--chrome-hi);font-weight:700}
+.tick-item .pip{width:6px;height:6px;background:var(--red);transform:rotate(45deg)}
+.tick-item:nth-child(4n) .pip{background:var(--yellow)}
+
+/* ---------- sections ---------- */
+section{padding:clamp(70px,9vw,130px) clamp(16px,4vw,56px)}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:clamp(30px,4vw,54px);flex-wrap:wrap}
+.section-title{font-family:var(--disp);font-weight:800;font-size:clamp(30px,5.4vw,64px);text-transform:uppercase;line-height:1}
+.section-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--red);text-transform:uppercase;display:block;margin-bottom:14px}
+
+/* filters */
+.filters{display:flex;gap:10px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:10px 18px;border:1px solid var(--line-strong);color:var(--chrome-mid);transition:all .25s}
+.chip:hover{color:var(--chrome-hi);border-color:var(--chrome-hi)}
+.chip.active{background:var(--chrome-hi);color:var(--void);border-color:var(--chrome-hi)}
+
+/* ---------- product grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.card{position:relative;background:var(--void);padding:18px 18px 22px;display:flex;flex-direction:column;gap:14px;overflow:hidden;
+  transform-style:preserve-3d;transition:background .3s;opacity:0;translate:0 30px}
+.card.in{opacity:1;translate:0 0;transition:opacity .7s ease,translate .7s cubic-bezier(.22,1,.36,1),background .3s}
+.card.hidden{display:none}
+.card::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(244,245,248,.10),rgba(255,46,46,.05) 40%,transparent 65%)}
+.card:hover::after{opacity:1}
+.card:hover{background:var(--panel)}
+.card-top{display:flex;justify-content:space-between;align-items:center}
+.serial{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--chrome-lo)}
+.tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--line-strong);color:var(--chrome-mid)}
+.card-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel-2)}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.22,1,.36,1),filter .5s;filter:saturate(.92)}
+.card:hover .card-img img{transform:scale(1.06);filter:saturate(1.05)}
+.card-img .shine{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.02) 54%,transparent 70%);
+  transform:translateX(-120%);transition:transform .8s ease}
+.card:hover .card-img .shine{transform:translateX(120%)}
+.card-name{font-family:var(--disp);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.02em;line-height:1.3}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+.price{font-family:var(--mono);font-size:13px;color:var(--yellow);letter-spacing:.1em}
+.card-cta{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--chrome-lo);text-transform:uppercase;display:flex;align-items:center;gap:8px;transition:color .25s,gap .25s}
+.card:hover .card-cta{color:var(--red);gap:14px}
+
+/* ---------- lookbook ---------- */
+.lookbook{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.look-strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px;scrollbar-width:none}
+.look-strip::-webkit-scrollbar{display:none}
+.look-item{flex:0 0 min(340px,74vw);scroll-snap-align:start;position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel-2)}
+.look-item img{width:100%;height:100%;object-fit:cover;filter:grayscale(.25) contrast(1.02);transition:filter .5s,transform 1s cubic-bezier(.22,1,.36,1)}
+.look-item:hover img{filter:grayscale(0);transform:scale(1.05)}
+.look-item .lbl{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--chrome-hi);background:rgba(8,8,10,.7);backdrop-filter:blur(8px);padding:8px 12px;text-transform:uppercase}
+
+/* ---------- manifesto ---------- */
+.manifesto{text-align:center;position:relative;overflow:hidden}
+.manifesto p.big{font-family:var(--disp);font-weight:800;font-size:clamp(22px,4.6vw,52px);line-height:1.25;text-transform:uppercase;max-width:1000px;margin:0 auto}
+.manifesto p.big em{font-style:normal;color:var(--red)}
+.manifesto p.big u{text-decoration:none;color:var(--yellow)}
+.manifesto .sub{margin:28px auto 0;max-width:560px;color:var(--chrome-mid);font-size:15px}
+.stamp{margin:44px auto 0;width:96px;opacity:.8;animation:spin2d 14s linear infinite}
+@keyframes spin2d{to{transform:rotate(360deg)}}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:clamp(40px,6vw,80px) clamp(16px,4vw,56px) 30px;background:var(--panel)}
+.foot-grid{display:flex;justify-content:space-between;gap:34px;flex-wrap:wrap;margin-bottom:50px}
+.foot-brand{max-width:320px}
+.foot-brand svg{width:56px;margin-bottom:18px}
+.foot-brand p{color:var(--chrome-lo);font-size:13px}
+.foot-col h5{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--chrome-lo);margin-bottom:16px}
+.foot-col a{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--chrome-mid);padding:6px 0;text-transform:uppercase;transition:color .25s,padding-left .25s}
+.foot-col a:hover{color:var(--chrome-hi);padding-left:8px}
+.foot-base{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:22px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--chrome-lo);text-transform:uppercase}
+.big-foot-word{font-family:var(--disp);font-weight:900;font-size:clamp(48px,13vw,190px);line-height:.9;text-transform:uppercase;text-align:center;margin:20px 0 40px;user-select:none;opacity:.9}
+
+/* reveal */
+.reveal{opacity:0;translate:0 36px;transition:opacity .8s ease,translate .8s cubic-bezier(.22,1,.36,1)}
+.reveal.in{opacity:1;translate:0 0}
+
+@media (max-width:640px){
+  header{height:62px}
+  .logo-center svg{width:38px;height:38px}
+  .nav-link.hide-sm{display:none}
+  .hero{padding-top:92px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .card{padding:12px 12px 16px}
+  .card-name{font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body class="locked">
+
+<!-- ============ SVG BADGE (defs used everywhere) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="chromeG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".28" stop-color="#dfe2ea"/>
+      <stop offset=".47" stop-color="#7c8090"/>
+      <stop offset=".53" stop-color="#4c4f59"/>
+      <stop offset=".62" stop-color="#c7cad4"/>
+      <stop offset=".85" stop-color="#f2f3f7"/>
+      <stop offset="1" stop-color="#8f93a0"/>
+    </linearGradient>
+    <g id="cr-badge">
+      <circle cx="100" cy="100" r="96" fill="#0a0a0c"/>
+      <circle cx="100" cy="100" r="93" fill="none" stroke="url(#chromeG)" stroke-width="6"/>
+      <circle cx="100" cy="100" r="76" fill="none" stroke="url(#chromeG)" stroke-width="1.4" opacity=".7"/>
+      <g fill="url(#chromeG)">
+        <path d="M96 52 H44 c-6 0-10 4-10 10 v76 c0 6 4 10 10 10 h52 v-24 H58 V76 h38 Z"/>
+        <path fill-rule="evenodd" d="M104 52 h52 c6 0 10 4 10 10 v34 c0 6-4 10-10 10 h-4 l16 42 h-26 l-14-38 h-2 v38 h-22 Z M126 74 v12 h16 c1.6 0 2-.5 2-2 v-8 c0-1.5-.4-2-2-2 Z"/>
+      </g>
+      <path d="M100 22 l3.5 7.5 8 .9 -6 5.4 1.7 7.9 -7.2-4.1 -7.2 4.1 1.7-7.9 -6-5.4 8-.9 Z" fill="url(#chromeG)"/>
+      <path d="M100 178 l3.5-7.5 8-.9 -6-5.4 1.7-7.9 -7.2 4.1 -7.2-4.1 1.7 7.9 -6 5.4 8 .9 Z" fill="url(#chromeG)" opacity=".55"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ============ LOADER ============ -->
+<div id="loader" role="status" aria-label="Loading Captain Rebel">
+  <div class="loader-inner">
+    <svg class="loader-badge sweepable" viewBox="0 0 200 200">
+      <use href="#cr-badge"/>
+      <g clip-path="url(#lc)">
+        <clipPath id="lc"><circle cx="100" cy="100" r="96"/></clipPath>
+        <rect class="sweep-rect" x="-40" y="0" width="70" height="200" fill="#ffffff" opacity=".14" transform="skewX(-18)"/>
+      </g>
+    </svg>
+    <div class="loader-meta">
+      <div class="loader-bar"><i id="loader-fill"></i></div>
+      <div class="loader-pct" id="loader-pct">000%</div>
+      <div class="loader-tag">POLISHING CHROME // FW-25 DROP</div>
+    </div>
+  </div>
+</div>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <nav class="nav-left" aria-label="Primary">
+    <a class="nav-link" href="#shop">Shop</a>
+    <a class="nav-link hide-sm" href="https://captainrebelclothing.com/pages/lookbook-fall-winter-25" target="_blank" rel="noopener">Lookbook</a>
+  </nav>
+  <a class="logo-center" href="#top" aria-label="Captain Rebel home">
+    <svg viewBox="0 0 200 200"><use href="#cr-badge"/></svg>
+  </a>
+  <nav class="nav-right" aria-label="Cart">
+    <a class="nav-link hide-sm" href="#manifesto">About</a>
+    <a class="nav-link" href="https://captainrebelclothing.com/cart" target="_blank" rel="noopener">Cart <span class="cart-count">(0)</span></a>
+  </nav>
+</header>
+
+<main id="top">
+  <!-- ============ HERO ============ -->
+  <section class="hero" style="padding-left:0;padding-right:0">
+    <div class="hero-bg-grid" aria-hidden="true"></div>
+    <div class="hero-eyebrow"><i></i>FW-25 · Limited Run · Worldwide<i></i></div>
+    <h1 class="sr-only">Captain Rebel Clothing</h1>
+    <div class="hero-title" aria-hidden="true">
+      <span class="row"><span class="chrome-anim">Captain</span></span>
+      <div class="coin-stage" id="coin-stage">
+        <canvas id="coin-canvas"></canvas>
+        <svg class="coin-fallback" viewBox="0 0 200 200"><use href="#cr-badge"/></svg>
+      </div>
+      <span class="row"><span class="chrome-anim">Rebel</span></span>
+    </div>
+    <p class="hero-sub">Built in the garage. Worn at the party. Heavyweight hoodies, flare sweats and tees — minted in small runs, never restocked.</p>
+    <div class="hero-ctas">
+      <a class="btn hot magnetic" href="#shop"><span>Shop the drop</span></a>
+      <a class="btn magnetic" href="https://captainrebelclothing.com/pages/lookbook-fall-winter-25" target="_blank" rel="noopener"><span>Lookbook FW-25</span></a>
+    </div>
+    <div class="scroll-hint">Scroll<i></i></div>
+  </section>
+
+  <!-- ============ TICKER ============ -->
+  <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker-track"></div></div>
+
+  <!-- ============ SHOP ============ -->
+  <section id="shop">
+    <div class="section-head reveal">
+      <div>
+        <span class="section-kicker">// 17 pieces on-chain-of-custody</span>
+        <h2 class="section-title chrome-text">The Drop</h2>
+      </div>
+      <div class="filters" role="tablist" aria-label="Filter products">
+        <button class="chip active" data-filter="all">All</button>
+        <button class="chip" data-filter="hoodie">Hoodies</button>
+        <button class="chip" data-filter="tee">Tees</button>
+        <button class="chip" data-filter="bottoms">Bottoms</button>
+      </div>
+    </div>
+    <div class="grid" id="product-grid"></div>
+  </section>
+
+  <!-- ============ LOOKBOOK ============ -->
+  <section class="lookbook">
+    <div class="section-head reveal">
+      <div>
+        <span class="section-kicker">// shot on location</span>
+        <h2 class="section-title chrome-text">Lookbook FW-25</h2>
+      </div>
+      <a class="btn magnetic" href="https://captainrebelclothing.com/pages/lookbook-fall-winter-25" target="_blank" rel="noopener"><span>Full lookbook</span></a>
+    </div>
+    <div class="look-strip reveal" id="look-strip"></div>
+  </section>
+
+  <!-- ============ MANIFESTO ============ -->
+  <section class="manifesto" id="manifesto">
+    <p class="big reveal">Chrome never rusts. We build for the <em>lover</em>, the <u>mechanic</u>, and everyone who refuses to pick a lane.</p>
+    <p class="sub reveal">Every Captain Rebel piece is cut heavy, patched by hand and numbered per run. When a colorway sells out, the mold is broken. No restocks. No apologies.</p>
+    <svg class="stamp reveal" viewBox="0 0 200 200"><use href="#cr-badge"/></svg>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="big-foot-word chrome-text" aria-hidden="true">Rebel</div>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <svg viewBox="0 0 200 200"><use href="#cr-badge"/></svg>
+      <p>Captain Rebel Clothing. Heavy fabric, loud colorways, quiet flex. Shipped worldwide from the garage.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Navigate</h5>
+      <a href="#shop">Shop</a>
+      <a href="https://captainrebelclothing.com/pages/lookbook-fall-winter-25" target="_blank" rel="noopener">Lookbook</a>
+      <a href="https://captainrebelclothing.com/cart" target="_blank" rel="noopener">Cart</a>
+    </div>
+    <div class="foot-col">
+      <h5>Collections</h5>
+      <a href="#shop" data-jump="hoodie">Hoodies</a>
+      <a href="#shop" data-jump="tee">Tees</a>
+      <a href="#shop" data-jump="bottoms">Bottoms</a>
+    </div>
+  </div>
+  <div class="foot-base">
+    <span>© 2026 Captain Rebel Clothing</span>
+    <span>Chrome never rusts ★ FW-25</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =====================================================
+   CAPTAIN REBEL — chrome / web3 redesign
+   ===================================================== */
+
+/* ---------- product data (live Shopify links + CDN imagery) ---------- */
+const CDN = "https://captainrebelclothing.com/cdn/shop/files/";
+const SHOP = "https://captainrebelclothing.com/products/";
+const PRODUCTS = [
+  {n:"Captain Rebel Patch Hoodie — Black", p:500, c:"hoodie", u:"black-hoodie-copy", i:"76A3203.jpg?v=1769293882"},
+  {n:"Captain Rebel Patch Hoodie — Grey",  p:500, c:"hoodie", u:"captain-rebel-patch-hoodie-grey", i:"76A3263_93f54662-8606-477f-9825-0cb3dd0c2373.jpg?v=1768656150"},
+  {n:"CR Pants — Red",                     p:150, c:"bottoms",u:"cr-pants", i:"76A2799_f823e5da-1bda-45b6-b0c5-601f4ede0982.jpg?v=1766390430"},
+  {n:"CR Pants — Yellow",                  p:150, c:"bottoms",u:"cr-pants-yellow", i:"76A2800_63b1ea25-16b8-4468-9014-c72c083a6584.jpg?v=1766390517"},
+  {n:"Grey Flare Sweats",                  p:200, c:"bottoms",u:"grey-sweats", i:"76A2820_d395ce5c-4bf5-46df-ba58-b37dfe56b956.jpg?v=1766390859"},
+  {n:"Grey Hoodie",                        p:200, c:"hoodie", u:"grey-hoodie", i:"76A2815_6dc9b5b3-d457-4540-b642-4a79043a689b.jpg?v=1766390809"},
+  {n:"Lover Mechanic Tee",                 p:150, c:"tee",    u:"lover-mechanic", i:"DWB_7401-10.png?v=1750576887"},
+  {n:"Mechanic Tee",                       p:150, c:"tee",    u:"mechanic-1", i:"DWB_7401-14_21f0ea36-8995-4397-8585-669554da0068.png?v=1750578037"},
+  {n:"Michael T-Shirt",                    p:80,  c:"tee",    u:"michael-t-shirt", i:"DWB_7401-6.png?v=1750576630"},
+  {n:"Olympic T-Shirt — Black",            p:80,  c:"tee",    u:"olympic-t-shirt-black", i:"DWB_7401-17.png?v=1750579227"},
+  {n:"Olympic T-Shirt — White",            p:80,  c:"tee",    u:"olympic-t-shirt", i:"DWB_7401-13.png?v=1750577584"},
+  {n:"Party Hoodie — Charcoal",            p:200, c:"hoodie", u:"mechanic", i:"DWB_7401-3_b1105f1d-2a6c-4f54-8bf2-651cb6debc81.png?v=1750579769"},
+  {n:"Party Hoodie — Red",                 p:200, c:"hoodie", u:"red-hoodie", i:"76A2861.jpg?v=1769293909"},
+  {n:"Party Hoodie — Yellow",              p:200, c:"hoodie", u:"yellow-hoodie", i:"yellow_hoodie_54078fb6-2fd6-4098-9577-7e9d643814e2.svg?v=1765959755"},
+  {n:"Pink Hoodie",                        p:200, c:"hoodie", u:"pink-hoodie", i:"76A2818_f599ce77-a7fb-4c12-9459-9b5339004b71.jpg?v=1766390778"},
+  {n:"Pink Sweats",                        p:200, c:"bottoms",u:"red-sweats", i:"76A2822_c66c4ad1-ce8d-4e6f-9fe9-2da302af7a35.jpg?v=1766390706"},
+  {n:"Yellow Sweats",                      p:200, c:"bottoms",u:"yellow-sweats", i:"76A2822_1_5c4985d1-9727-48a7-9663-e61acd7506b2.jpg?v=1766390566"},
+];
+const CAT_LABEL = {hoodie:"Hoodie", tee:"Tee", bottoms:"Bottoms"};
+
+/* ---------- render product grid ---------- */
+const grid = document.getElementById('product-grid');
+PRODUCTS.forEach((pr, idx)=>{
+  const a = document.createElement('a');
+  a.className = 'card';
+  a.dataset.cat = pr.c;
+  a.href = SHOP + pr.u;
+  a.target = "_blank"; a.rel = "noopener";
+  a.innerHTML = `
+    <div class="card-top">
+      <span class="serial">CR-${String(idx+1).padStart(3,'0')} / 017</span>
+      <span class="tag">${CAT_LABEL[pr.c]}</span>
+    </div>
+    <div class="card-img">
+      <img loading="lazy" src="${CDN+pr.i}" alt="${pr.n}">
+      <span class="shine"></span>
+    </div>
+    <div class="card-name">${pr.n}</div>
+    <div class="card-bottom">
+      <span class="price">$${pr.p}.00</span>
+      <span class="card-cta">View <span aria-hidden="true">→</span></span>
+    </div>`;
+  grid.appendChild(a);
+});
+
+/* ---------- filters ---------- */
+const chips = document.querySelectorAll('.chip');
+function applyFilter(f){
+  chips.forEach(c=>c.classList.toggle('active', c.dataset.filter===f));
+  document.querySelectorAll('.card').forEach(card=>{
+    const show = f==='all' || card.dataset.cat===f;
+    card.classList.toggle('hidden', !show);
+    if(show) requestAnimationFrame(()=>card.classList.add('in'));
+  });
+}
+chips.forEach(c=>c.addEventListener('click', ()=>applyFilter(c.dataset.filter)));
+document.querySelectorAll('[data-jump]').forEach(l=>l.addEventListener('click',()=>applyFilter(l.dataset.jump)));
+
+/* ---------- ticker ---------- */
+const tickerTrack = document.getElementById('ticker-track');
+function tickerHTML(){
+  return PRODUCTS.map((pr,i)=>`<span class="tick-item"><span class="pip"></span>CR-${String(i+1).padStart(3,'0')} · <b>${pr.n}</b> — $${pr.p}</span>`).join('');
+}
+tickerTrack.innerHTML = tickerHTML() + tickerHTML();
+
+/* ---------- lookbook strip ---------- */
+const LOOKS = [0,12,2,14,7,3,15];
+const strip = document.getElementById('look-strip');
+LOOKS.forEach((pi,k)=>{
+  const pr = PRODUCTS[pi];
+  const d = document.createElement('a');
+  d.className = 'look-item';
+  d.href = SHOP + pr.u; d.target="_blank"; d.rel="noopener";
+  d.innerHTML = `<img loading="lazy" src="${CDN+pr.i}" alt="${pr.n}"><span class="lbl">Look ${String(k+1).padStart(2,'0')}</span>`;
+  strip.appendChild(d);
+});
+
+/* ---------- loader (real image preload + progress) ---------- */
+const loader = document.getElementById('loader');
+const fill = document.getElementById('loader-fill');
+const pctEl = document.getElementById('loader-pct');
+let progress = 0, target = 0, startT = performance.now();
+const PRELOAD = PRODUCTS.slice(0,8).map(p=>CDN+p.i);
+let loadedCount = 0;
+PRELOAD.forEach(src=>{
+  const im = new Image();
+  im.onload = im.onerror = ()=>{ loadedCount++; target = Math.max(target, (loadedCount/PRELOAD.length)*100); };
+  im.src = src;
+});
+window.addEventListener('load', ()=>{ target = 100; });
+setTimeout(()=>{ target = 100; }, 5000); // hard failsafe
+(function tickLoader(){
+  target = Math.max(target, Math.min(92, (performance.now()-startT)/28)); // graceful ramp
+  progress += (target - progress) * 0.08;
+  fill.style.transform = `scaleX(${progress/100})`;
+  pctEl.textContent = String(Math.round(progress)).padStart(3,'0') + '%';
+  const minShown = performance.now() - startT > 1500;
+  if(progress > 99.4 && minShown){
+    pctEl.textContent = '100%';
+    fill.style.transform = 'scaleX(1)';
+    loader.classList.add('done');
+    document.body.classList.remove('locked');
+    document.body.classList.add('ready');
+    setTimeout(()=>loader.classList.add('gone'), 950);
+    revealInit();
+    return;
+  }
+  requestAnimationFrame(tickLoader);
+})();
+
+/* ---------- scroll reveals ---------- */
+function revealInit(){
+  const io = new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.reveal,.card').forEach(el=>io.observe(el));
+}
+
+/* ---------- holo tilt on cards ---------- */
+const fine = matchMedia('(pointer:fine)').matches;
+if(fine){
+  grid.addEventListener('pointermove', e=>{
+    const card = e.target.closest('.card'); if(!card) return;
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+    card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+  });
+}
+
+/* ---------- custom cursor + magnetic buttons ---------- */
+if(fine){
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  let rx=0, ry=0, tx=0, ty=0;
+  addEventListener('pointermove', e=>{
+    tx=e.clientX; ty=e.clientY;
+    dot.style.transform = `translate(${tx}px,${ty}px) translate(-50%,-50%)`;
+    const hot = e.target.closest('a,button');
+    document.body.classList.toggle('cursor-hot', !!hot);
+  });
+  (function loopCursor(){
+    rx += (tx-rx)*.16; ry += (ty-ry)*.16;
+    ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loopCursor);
+  })();
+  document.querySelectorAll('.magnetic').forEach(btn=>{
+    btn.addEventListener('pointermove', e=>{
+      const r = btn.getBoundingClientRect();
+      btn.style.transform = `translate(${(e.clientX-r.left-r.width/2)*.22}px,${(e.clientY-r.top-r.height/2)*.3}px)`;
+    });
+    btn.addEventListener('pointerleave', ()=>{ btn.style.transform=''; });
+  });
+}
+
+/* =====================================================
+   3D CHROME COIN — Three.js
+   ===================================================== */
+const stage = document.getElementById('coin-stage');
+const reduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+try{
+  if(!window.THREE) throw new Error('three missing');
+  const canvas = document.getElementById('coin-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, .1, 60);
+  camera.position.set(0, 0, 7.4);
+
+  /* --- studio environment for chrome reflections --- */
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x0a0a0c);
+  const addPanel = (w,h,x,y,z,color,ry=0,rx=0)=>{
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), new THREE.MeshBasicMaterial({color, side:THREE.DoubleSide}));
+    m.position.set(x,y,z); m.rotation.set(rx,ry,0); envScene.add(m);
+  };
+  addPanel(16,5, 0, 7,-4, 0xffffff, 0, Math.PI/3);        // key softbox above
+  addPanel(14,3, 0,-7,-3, 0x9aa0b4, 0,-Math.PI/3);        // cool fill below
+  addPanel(4,12, -9, 0, 0, 0xff2e2e, Math.PI/2);          // rebel red strip
+  addPanel(4,12,  9, 0, 0, 0xffd400,-Math.PI/2);          // caution yellow strip
+  addPanel(18,10, 0, 0,-9, 0x1c1c22);                     // back card
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envTex = pmrem.fromScene(envScene, 0.06).texture;
+  pmrem.dispose();
+
+  /* --- engraved badge texture (drawn on canvas) --- */
+  function makeBadgeCanvas(){
+    const S = 1024, c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d');
+    const CX = S/2, CY = S/2;
+    g.fillStyle = '#232326'; g.fillRect(0,0,S,S);        // mirror-polish base
+    g.strokeStyle = '#9a9aa0'; g.fillStyle = '#9a9aa0';  // frosted engraving
+    // outer engraved ring
+    g.lineWidth = 26; g.beginPath(); g.arc(CX,CY,458,0,Math.PI*2); g.stroke();
+    g.lineWidth = 6;  g.beginPath(); g.arc(CX,CY,372,0,Math.PI*2); g.stroke();
+    // reeded edge ticks
+    for(let i=0;i<72;i++){
+      const a = i/72*Math.PI*2;
+      g.save(); g.translate(CX,CY); g.rotate(a);
+      g.fillRect(-3, -452, 6, 22); g.restore();
+    }
+    // circular text (top arc reads left→right along the top,
+    // bottom arc is flipped so it reads upright along the bottom)
+    const ringText = (txt, radius, startA, endA, flip)=>{
+      g.save(); g.translate(CX,CY);
+      g.font = '700 50px "Space Mono", monospace';
+      g.textAlign='center'; g.textBaseline='middle';
+      const span = endA - startA;
+      for(let i=0;i<txt.length;i++){
+        const a = startA + span * (i/(txt.length-1||1));
+        g.save(); g.rotate(a);
+        g.translate(0, flip ? radius : -radius);
+        if(flip) g.rotate(Math.PI);
+        g.fillText(txt[i],0,0);
+        g.restore();
+      }
+      g.restore();
+    };
+    ringText('CAPTAIN ★ REBEL', 410, -Math.PI*0.42,  Math.PI*0.42, false);
+    ringText('EST ★ MMXXV',    410,  Math.PI*0.30, -Math.PI*0.30, true);
+    // big CR monogram
+    g.font = '900 330px "Arial Black","Archivo Black",Arial,sans-serif';
+    g.textAlign='center'; g.textBaseline='alphabetic';
+    g.fillText('CR', CX, CY+118);
+    // star above monogram
+    const star=(x,y,r)=>{ g.save(); g.translate(x,y); g.beginPath();
+      for(let i=0;i<10;i++){ const rr=i%2?r*.42:r; const a=-Math.PI/2 + i*Math.PI/5;
+        g[i?'lineTo':'moveTo'](Math.cos(a)*rr, Math.sin(a)*rr); }
+      g.closePath(); g.fill(); g.restore(); };
+    star(CX, CY-206, 46);
+    return c;
+  }
+  const badgeTex = new THREE.CanvasTexture(makeBadgeCanvas());
+  badgeTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  /* --- coin build --- */
+  const group = new THREE.Group();
+  const chrome = {color:0xffffff, metalness:1, envMap:envTex, envMapIntensity:1.25};
+  const R = 1.62, T = .26;
+  const bodyMat = new THREE.MeshStandardMaterial({...chrome, roughness:.16});
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(R,R,T,128), bodyMat);
+  body.rotation.x = Math.PI/2;
+  group.add(body);
+  const faceMat = new THREE.MeshStandardMaterial({
+    ...chrome, roughness:1, roughnessMap:badgeTex, bumpMap:badgeTex, bumpScale:.02
+  });
+  const faceF = new THREE.Mesh(new THREE.CircleGeometry(R*.985, 96), faceMat);
+  faceF.position.z = T/2 + .002;
+  const faceB = faceF.clone();
+  faceB.rotation.y = Math.PI;
+  faceB.position.z = -(T/2 + .002);
+  group.add(faceF, faceB);
+  scene.add(group);
+
+  /* accent lights for sparkle on the engraving */
+  scene.add(new THREE.AmbientLight(0xffffff, .25));
+  const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3,4,5); scene.add(key);
+  const redL = new THREE.PointLight(0xff2e2e, .9, 30); redL.position.set(-5,-1,3); scene.add(redL);
+  const yelL = new THREE.PointLight(0xffd400, .8, 30); yelL.position.set(5,2,3); scene.add(yelL);
+
+  /* --- responsive sizing --- */
+  function size(){
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+  size(); addEventListener('resize', size);
+
+  /* --- pointer parallax --- */
+  let px=0, py=0;
+  if(fine){
+    addEventListener('pointermove', e=>{
+      px = (e.clientX/innerWidth - .5);
+      py = (e.clientY/innerHeight - .5);
+    });
+  }
+
+  /* --- animate --- */
+  const clock = new THREE.Clock();
+  (function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    const spin = reduced ? .12 : .55;
+    group.rotation.y = t*spin;
+    if(!reduced){
+      group.rotation.x = Math.sin(t*.7)*.10 + py*.35;
+      group.rotation.z = Math.sin(t*.5)*.05 + px*.12;
+      group.position.y = Math.sin(t*1.1)*.07;
+    }
+    renderer.render(scene, camera);
+  })();
+}catch(err){
+  stage.classList.add('no3d');
+  const cv = document.getElementById('coin-canvas'); if(cv) cv.style.display='none';
+}
+</script>
+</body>
+</html>

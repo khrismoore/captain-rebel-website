@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Captain Rebel chrome badge">
+  <defs>
+    <linearGradient id="chromeG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".28" stop-color="#dfe2ea"/>
+      <stop offset=".47" stop-color="#7c8090"/>
+      <stop offset=".53" stop-color="#4c4f59"/>
+      <stop offset=".62" stop-color="#c7cad4"/>
+      <stop offset=".85" stop-color="#f2f3f7"/>
+      <stop offset="1" stop-color="#8f93a0"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="96" fill="#0a0a0c"/>
+  <circle cx="100" cy="100" r="93" fill="none" stroke="url(#chromeG)" stroke-width="6"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="url(#chromeG)" stroke-width="1.4" opacity=".7"/>
+  <g fill="url(#chromeG)">
+    <path d="M96 52 H44 c-6 0-10 4-10 10 v76 c0 6 4 10 10 10 h52 v-24 H58 V76 h38 Z"/>
+    <path fill-rule="evenodd" d="M104 52 h52 c6 0 10 4 10 10 v34 c0 6-4 10-10 10 h-4 l16 42 h-26 l-14-38 h-2 v38 h-22 Z M126 74 v12 h16 c1.6 0 2-.5 2-2 v-8 c0-1.5-.4-2-2-2 Z"/>
+  </g>
+  <path d="M100 22 l3.5 7.5 8 .9 -6 5.4 1.7 7.9 -7.2-4.1 -7.2 4.1 1.7-7.9 -6-5.4 8-.9 Z" fill="url(#chromeG)"/>
+  <path d="M100 178 l3.5-7.5 8-.9 -6-5.4 1.7-7.9 -7.2 4.1 -7.2-4.1 1.7 7.9 -6 5.4 8 .9 Z" fill="url(#chromeG)" opacity=".55"/>
+</svg>

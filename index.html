@@ -184,13 +184,75 @@ section{padding:clamp(70px,9vw,130px) clamp(16px,4vw,56px)}
 .card:hover .card-cta{color:var(--red);gap:14px}
 
 /* ---------- lookbook ---------- */
-.lookbook{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.lookbook{position:relative;background:#000;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+/* chrome grid floor, faded out at the edges */
+.lookbook::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(transparent 0 97%,rgba(244,245,248,.055) 97% 100%) 0 0/100% 46px,
+    linear-gradient(90deg,transparent 0 97%,rgba(244,245,248,.055) 97% 100%) 0 0/46px 100%;
+  -webkit-mask-image:radial-gradient(130% 85% at 50% 42%,#000 18%,transparent 74%);
+  mask-image:radial-gradient(130% 85% at 50% 42%,#000 18%,transparent 74%)}
+.lookbook>*{position:relative;z-index:1}
+
 .look-strip{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px;scrollbar-width:none}
 .look-strip::-webkit-scrollbar{display:none}
-.look-item{flex:0 0 min(340px,74vw);scroll-snap-align:start;position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel-2)}
-.look-item img{width:100%;height:100%;object-fit:cover;filter:grayscale(.25) contrast(1.02);transition:filter .5s,transform 1s cubic-bezier(.22,1,.36,1)}
-.look-item:hover img{filter:grayscale(0);transform:scale(1.05)}
-.look-item .lbl{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--chrome-hi);background:rgba(8,8,10,.7);backdrop-filter:blur(8px);padding:8px 12px;text-transform:uppercase}
+
+.look-item{flex:0 0 min(340px,74vw);scroll-snap-align:start;position:relative;
+  aspect-ratio:4/5;overflow:hidden;background:#000;isolation:isolate}
+/* holographic ambient wash behind the piece */
+.look-item::before{content:"";position:absolute;left:50%;top:50%;width:170%;aspect-ratio:1;
+  translate:-50% -50%;z-index:0;opacity:0;transition:opacity .5s;filter:blur(46px);
+  background:conic-gradient(var(--red),var(--yellow),#f4f5f8,#00e5ff,var(--red));
+  animation:look-spin 9s linear infinite}
+.look-item:hover::before{opacity:.20}
+/* hairline frame on hover */
+.look-item::after{content:"";position:absolute;inset:0;z-index:6;pointer-events:none;
+  border:1px solid var(--line);transition:border-color .4s}
+.look-item:hover::after{border-color:var(--line-strong)}
+
+.look-item .halo{position:absolute;left:50%;top:50%;width:80%;aspect-ratio:1;translate:-50% -50%;
+  border-radius:50%;z-index:0;filter:blur(26px);opacity:.5;transition:opacity .5s,scale .8s;
+  background:radial-gradient(circle,var(--glow) 0%,transparent 68%)}
+.look-item:hover .halo{opacity:.95;scale:1.14}
+
+.look-item img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;
+  padding:11% 13% 19%;
+  filter:drop-shadow(0 26px 34px rgba(0,0,0,.85));
+  transition:transform 1s cubic-bezier(.22,1,.36,1),filter .5s;
+  animation:look-float 7s ease-in-out infinite;animation-delay:var(--d,0s)}
+.look-item:hover img{transform:translateY(-10px) scale(1.06);
+  filter:drop-shadow(0 32px 40px rgba(0,0,0,.9))
+         drop-shadow(2px 0 0 rgba(255,46,46,.45))
+         drop-shadow(-2px 0 0 rgba(0,229,255,.38))}
+
+.look-item .scan{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.16;
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.09) 0 1px,transparent 1px 3px)}
+.look-item .holo{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity .4s;
+  mix-blend-mode:screen;
+  background:radial-gradient(340px circle at var(--mx,50%) var(--my,50%),
+    rgba(255,46,46,.16),rgba(255,212,0,.13) 28%,rgba(0,229,255,.12) 48%,transparent 66%)}
+.look-item:hover .holo{opacity:1}
+
+.look-tag{position:absolute;left:12px;top:12px;z-index:5;font-family:var(--mono);font-size:9px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--chrome-mid);padding:5px 9px;
+  border:1px solid var(--line-strong);background:rgba(0,0,0,.5);backdrop-filter:blur(8px)}
+.look-meta{position:absolute;left:0;right:0;bottom:0;z-index:5;padding:14px 12px 12px;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:10px;
+  background:linear-gradient(transparent,rgba(0,0,0,.9) 58%)}
+.look-id{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--chrome-hi)}
+.look-name{display:block;margin-top:3px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--chrome-mid)}
+.look-hash{display:block;margin-top:3px;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;
+  color:var(--chrome-lo)}
+.look-ed{flex:0 0 auto;font-family:var(--mono);font-size:9px;letter-spacing:.16em;padding:4px 8px;
+  border:1px solid var(--line-strong);color:var(--chrome-mid);white-space:nowrap}
+
+@keyframes look-spin{to{rotate:360deg}}
+@keyframes look-float{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@media (prefers-reduced-motion:reduce){
+  .look-item img,.look-item::before{animation:none}
+}
 
 /* ---------- manifesto ---------- */
 .manifesto{text-align:center;position:relative;overflow:hidden}
@@ -457,17 +519,50 @@ function tickerHTML(){
 }
 tickerTrack.innerHTML = tickerHTML() + tickerHTML();
 
-/* ---------- lookbook strip ---------- */
+/* ---------- lookbook strip (cut-out apparel on black) ---------- */
 const LOOKS = [0,12,2,14,7,3,15];
+/* per-look ambient glow + a trait chip, keyed to the actual garment */
+const LOOK_GLOW = ['rgba(244,245,248,.30)','rgba(255,46,46,.36)','rgba(255,46,46,.28)',
+                   'rgba(255,105,180,.34)','rgba(244,245,248,.24)','rgba(255,212,0,.32)',
+                   'rgba(255,105,180,.30)'];
+const LOOK_TRAIT = ['Heavyweight','Zip / Hood','Wide Leg','Cropped','Camp Collar',
+                    'Wide Leg','Tapered'];
+/* deterministic per-product id so the "hash" is stable, not random noise */
+const hash8 = s => { let h=0x811c9dc5;
+  for(const c of s){ h ^= c.charCodeAt(0); h = Math.imul(h,0x01000193) >>> 0; }
+  return h.toString(16).padStart(8,'0'); };
+
 const strip = document.getElementById('look-strip');
+const TOTAL = String(LOOKS.length).padStart(2,'0');
 LOOKS.forEach((pi,k)=>{
   const pr = PRODUCTS[pi];
-  const d = document.createElement('a');
-  d.className = 'look-item';
-  d.href = SHOP + pr.u; d.target="_blank"; d.rel="noopener";
-  d.innerHTML = `<img loading="lazy" src="${CDN+pr.i}" alt="${pr.n}"><span class="lbl">Look ${String(k+1).padStart(2,'0')}</span>`;
-  strip.appendChild(d);
+  const n  = String(k+1).padStart(2,'0');
+  const a  = document.createElement('a');
+  a.className = 'look-item';
+  a.style.setProperty('--glow', LOOK_GLOW[k]);
+  a.style.setProperty('--d', (k*0.55).toFixed(2)+'s');
+  a.href = SHOP + pr.u; a.target = "_blank"; a.rel = "noopener";
+  a.innerHTML =
+    `<span class="halo"></span>`+
+    `<img loading="lazy" src="assets/looks/look-${n}.webp" alt="${pr.n}">`+
+    `<span class="scan"></span><span class="holo"></span>`+
+    `<span class="look-tag">${LOOK_TRAIT[k]}</span>`+
+    `<span class="look-meta"><span>`+
+      `<span class="look-id">Look ${n} / ${TOTAL}</span>`+
+      `<span class="look-name">${pr.n}</span>`+
+      `<span class="look-hash">0x${hash8(pr.u)}</span>`+
+    `</span><span class="look-ed">1 / 1</span></span>`;
+  strip.appendChild(a);
 });
+/* cursor-tracked holographic sheen */
+if(fine){
+  strip.addEventListener('pointermove', e=>{
+    const it = e.target.closest('.look-item'); if(!it) return;
+    const r = it.getBoundingClientRect();
+    it.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+    it.style.setProperty('--my', ((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+  }, {passive:true});
+}
 
 /* ---------- loader (real image preload + progress) ---------- */
 const loader = document.getElementById('loader');

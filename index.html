@@ -170,10 +170,18 @@ section{padding:clamp(70px,9vw,130px) clamp(16px,4vw,56px)}
 .card-top{display:flex;justify-content:space-between;align-items:center}
 .serial{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--chrome-lo)}
 .tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--line-strong);color:var(--chrome-mid)}
-.card-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--panel-2)}
-.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.22,1,.36,1),filter .5s;filter:saturate(.92)}
-.card:hover .card-img img{transform:scale(1.06);filter:saturate(1.05)}
-.card-img .shine{position:absolute;inset:0;pointer-events:none;
+.card-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:#000;isolation:isolate}
+.card-img::before{content:"";position:absolute;left:50%;top:52%;width:84%;aspect-ratio:1;
+  translate:-50% -50%;border-radius:50%;z-index:0;filter:blur(24px);opacity:.4;
+  transition:opacity .5s,scale .7s;
+  background:radial-gradient(circle,var(--pglow,rgba(244,245,248,.26)) 0%,transparent 68%)}
+.card:hover .card-img::before{opacity:.85;scale:1.12}
+.card-img img{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;padding:8% 10% 10%;
+  filter:drop-shadow(0 18px 24px rgba(0,0,0,.8));
+  transition:transform .8s cubic-bezier(.22,1,.36,1),filter .5s}
+.card:hover .card-img img{transform:translateY(-6px) scale(1.05);
+  filter:drop-shadow(0 24px 30px rgba(0,0,0,.86))}
+.card-img .shine{position:absolute;inset:0;z-index:2;pointer-events:none;
   background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.16) 46%,rgba(255,255,255,.02) 54%,transparent 70%);
   transform:translateX(-120%);transition:transform .8s ease}
 .card:hover .card-img .shine{transform:translateX(120%)}
@@ -453,6 +461,15 @@ footer{border-top:1px solid var(--line);padding:clamp(40px,6vw,80px) clamp(16px,
 /* ---------- product data (live Shopify links + CDN imagery) ---------- */
 const CDN = "https://captainrebelclothing.com/cdn/shop/files/";
 const SHOP = "https://captainrebelclothing.com/products/";
+/* Local transparent cut-outs. CDN + the i: fields below stay as the source of
+   truth for tools/make-cutouts.py, which regenerates these files. */
+const IMG = i => `assets/products/cr-${String(i+1).padStart(2,'0')}.webp`;
+/* ambient glow behind each piece, keyed to the garment's own colour */
+const G_CHR='rgba(244,245,248,.26)', G_RED='rgba(255,46,46,.30)',
+      G_YEL='rgba(255,212,0,.28)',   G_PNK='rgba(255,105,180,.30)',
+      G_AMB='rgba(255,150,60,.24)';
+const PGLOW = [G_CHR,G_CHR,G_RED,G_YEL,G_CHR,G_CHR,G_CHR,G_AMB,G_CHR,
+               G_RED,G_CHR,G_CHR,G_RED,G_YEL,G_PNK,G_PNK,G_YEL];
 const PRODUCTS = [
   {n:"Captain Rebel Patch Hoodie — Black", p:500, c:"hoodie", u:"black-hoodie-copy", i:"76A3203.jpg?v=1769293882"},
   {n:"Captain Rebel Patch Hoodie — Grey",  p:500, c:"hoodie", u:"captain-rebel-patch-hoodie-grey", i:"76A3263_93f54662-8606-477f-9825-0cb3dd0c2373.jpg?v=1768656150"},
@@ -480,6 +497,7 @@ PRODUCTS.forEach((pr, idx)=>{
   const a = document.createElement('a');
   a.className = 'card';
   a.dataset.cat = pr.c;
+  a.style.setProperty('--pglow', PGLOW[idx]);
   a.href = SHOP + pr.u;
   a.target = "_blank"; a.rel = "noopener";
   a.innerHTML = `
@@ -488,7 +506,7 @@ PRODUCTS.forEach((pr, idx)=>{
       <span class="tag">${CAT_LABEL[pr.c]}</span>
     </div>
     <div class="card-img">
-      <img loading="lazy" src="${CDN+pr.i}" alt="${pr.n}">
+      <img loading="lazy" src="${IMG(idx)}" alt="${pr.n}">
       <span class="shine"></span>
     </div>
     <div class="card-name">${pr.n}</div>
@@ -522,9 +540,6 @@ tickerTrack.innerHTML = tickerHTML() + tickerHTML();
 /* ---------- lookbook strip (cut-out apparel on black) ---------- */
 const LOOKS = [0,12,2,14,7,3,15];
 /* per-look ambient glow + a trait chip, keyed to the actual garment */
-const LOOK_GLOW = ['rgba(244,245,248,.30)','rgba(255,46,46,.36)','rgba(255,46,46,.28)',
-                   'rgba(255,105,180,.34)','rgba(244,245,248,.24)','rgba(255,212,0,.32)',
-                   'rgba(255,105,180,.30)'];
 const LOOK_TRAIT = ['Heavyweight','Zip / Hood','Wide Leg','Cropped','Camp Collar',
                     'Wide Leg','Tapered'];
 /* deterministic per-product id so the "hash" is stable, not random noise */
@@ -539,12 +554,12 @@ LOOKS.forEach((pi,k)=>{
   const n  = String(k+1).padStart(2,'0');
   const a  = document.createElement('a');
   a.className = 'look-item';
-  a.style.setProperty('--glow', LOOK_GLOW[k]);
+  a.style.setProperty('--glow', PGLOW[pi]);
   a.style.setProperty('--d', (k*0.55).toFixed(2)+'s');
   a.href = SHOP + pr.u; a.target = "_blank"; a.rel = "noopener";
   a.innerHTML =
     `<span class="halo"></span>`+
-    `<img loading="lazy" src="assets/looks/look-${n}.webp" alt="${pr.n}">`+
+    `<img loading="lazy" src="${IMG(pi)}" alt="${pr.n}">`+
     `<span class="scan"></span><span class="holo"></span>`+
     `<span class="look-tag">${LOOK_TRAIT[k]}</span>`+
     `<span class="look-meta"><span>`+
@@ -569,7 +584,7 @@ const loader = document.getElementById('loader');
 const fill = document.getElementById('loader-fill');
 const pctEl = document.getElementById('loader-pct');
 let progress = 0, target = 0, startT = performance.now();
-const PRELOAD = PRODUCTS.slice(0,8).map(p=>CDN+p.i);
+const PRELOAD = PRODUCTS.slice(0,8).map((_,i)=>IMG(i));
 let loadedCount = 0;
 PRELOAD.forEach(src=>{
   const im = new Image();

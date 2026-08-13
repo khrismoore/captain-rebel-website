@@ -198,6 +198,30 @@ drop-shadow, staggered float, and token-style metadata (`Look 01 / 07`, garment 
 stable FNV-1a hash of the handle, `1 / 1`). Motion respects `prefers-reduced-motion`.
 The hash is decorative — it is **not** on any chain.
 
+## 4d. HERO BACKGROUND — generated nautical chart
+
+`assets/hero-map.svg` replaces the old CSS grid behind the hero. Regenerate with:
+
+    python tools/make-hero-map.py --seed 7 --preview
+
+It builds a fractal heightfield (smooth fbm for continents + ridged fbm for ranges,
+edges pushed underwater so land does not run off frame) and pulls **real iso-contours**
+out of it with marching squares. That is why it reads as a map: the coastline is a
+genuine sea-level contour, ranges appear where contours bunch on steep ground, and the
+offshore rings nest like depth soundings. Three layers — `deep` (dashed bathymetry),
+`coast`, `relief` — plus a lat/long graticule that replaces the grid Khris had.
+
+Deterministic per `--seed`. Seed 7 leaves the centre open, which is where the title and
+the spinning chain sit — **check that before switching seeds.** `--preview` writes
+`assets/_hero-map-preview.png` (gitignored).
+
+**Gotcha, cost an hour:** RDP silently collapses closed rings. Every contour is closed,
+so `pts[0] == pts[-1]`, the baseline has zero length, and the usual point-to-line formula
+scores every point 0 — the whole ring reduces to two identical points and gets dropped.
+The first run emitted **0 paths** for all layers. `rdp()` now measures point-to-point when
+the baseline is degenerate, and is iterative because coastlines hit ~1100 points and blew
+the recursion limit. Do not "simplify" that function back.
+
 ## 5. Gotchas / things that weren't obvious
 - The hero `<h1>` is visually hidden (`.sr-only`) with the animated chrome word-art marked
   `aria-hidden` — keeps it accessible without duplicating the display type. Don't "fix" the

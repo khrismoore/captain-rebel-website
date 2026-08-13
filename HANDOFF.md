@@ -71,7 +71,8 @@ captain-rebel/
   `{n:name, p:price, c:category('hoodie'|'tee'|'bottoms'), u:shopify-handle, i:cdn-image-path}`.
 - **The 3D chain** → `const CHAIN` (contour data) then `shapes` → `ExtrudeGeometry`.
   `makeBadgeCanvas()` and the coin's `CylinderGeometry`/`CircleGeometry` are **gone**.
-- **Chain material / spin / lights** → same block (search `chainMesh`, `spin`, rim lights `redL`/`yelL`).
+- **Chain material / spin / lights** → same block (search `chainMesh`, `spin`, rim lights
+  `emberL`/`yelL`). The mark is **struck gold**, not chrome — see 4e.
 - **Loader timing/behavior** → the `/* loader */` block (`PRELOAD`, `tickLoader()`).
 - **Colors** → CSS `:root` variables at the very top of `<style>`.
 - **Fonts** → Unbounded (display), Space Grotesk (body), Space Mono (utility), via Google Fonts `<link>`.
@@ -221,6 +222,41 @@ scores every point 0 — the whole ring reduces to two identical points and gets
 The first run emitted **0 paths** for all layers. `rdp()` now measures point-to-point when
 the baseline is degenerate, and is iterative because coastlines hit ~1100 points and blew
 the recursion limit. Do not "simplify" that function back.
+
+## 4e. THE MARK IS GOLD — and why the environment matters more than the material
+
+Khris referenced an antique gold doubloon, so the hero mark is struck gold, not chrome.
+`group.scale.setScalar(.78)`, on top of the 3.2-unit geometry.
+
+**The thing to understand before tuning it:** at `metalness: 1` there is NO diffuse term.
+Ambient lights do essentially nothing. Every bit of shading you see is *reflection of the
+environment*. The first gold pass used a bright warm room and came out looking like flat
+yellow plastic. The fix was not the material — it was rebuilding the env with **small hot
+sources against a near-black surround**, including a dark panel in FRONT so the faces have
+something dark to reflect. That is what gives hard highlights and deep recesses.
+
+- Surface: `makeHammered()` paints ~3200 radial pits plus fine grain onto a 1024 canvas,
+  used as BOTH `roughnessMap` and `bumpMap`. Roughness is *multiplied* by the map's green
+  channel, so `roughness:.52` against mid-grey lands ~.1–.45 across the piece: polished
+  high points, duller pits. `bumpScale:.03`.
+- `color:0xe0a83c`, `envMapIntensity:1.25`. Pushing intensity up flattens it — add
+  contrast in the env instead.
+
+Verified by capturing the rendered WebGL frame and measuring it: average **RGB
+(250,222,131), hue 46°**, speculars clipping to pure white. Then confirmed by eye.
+
+## 4f. HOVER — bevel, not a sweep
+
+Khris removed the light-sweep (`.shine` is gone entirely) and asked for the glow cut back
+hard. Hover now reads as a **bevelled edge**: an inset top highlight and bottom shadow, a
+hairline ring, and a tight glow tinted by the piece's own `--pglow`. The soft halo is
+still there but only at `.1 → .13`.
+
+**Clipping constraints — why the two are built differently:** `.card` is
+`overflow:hidden`, so an outer glow on `.card-img` must stay under ~16px or the card
+crops it (there is 18px of padding to work with). `.look-strip` is an `overflow-x:auto`
+scroll container and would clip a horizontal outer glow entirely, so the lookbook bevel
+uses an **inset** glow on `.look-item::after`.
 
 ## 5. Gotchas / things that weren't obvious
 - The hero `<h1>` is visually hidden (`.sr-only`) with the animated chrome word-art marked

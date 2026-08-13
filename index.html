@@ -569,8 +569,12 @@ LOOKS.forEach((pi,k)=>{
     `</span><span class="look-ed">1 / 1</span></span>`;
   strip.appendChild(a);
 });
-/* cursor-tracked holographic sheen */
-if(fine){
+/* cursor-tracked holographic sheen.
+   NOTE: `fine` is declared further down (const, so it is in the temporal dead
+   zone up here). Referencing it threw a ReferenceError that aborted the rest of
+   the script — including the loader — and left the page stuck on the loading
+   screen. Keep this check self-contained. */
+if(matchMedia('(pointer:fine)').matches){
   strip.addEventListener('pointermove', e=>{
     const it = e.target.closest('.look-item'); if(!it) return;
     const r = it.getBoundingClientRect();

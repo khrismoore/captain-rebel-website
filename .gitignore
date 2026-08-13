@@ -3,3 +3,7 @@ node_modules/
 
 # cut-out review sheet (regenerate with tools/make-cutouts.py --sheet)
 assets/products/_contact.png
+
+# python
+__pycache__/
+*.pyc

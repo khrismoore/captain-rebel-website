@@ -126,9 +126,9 @@ body.ready header{transform:translateY(0)}
 /* drop-shadow on the canvas follows its ALPHA, so the red hugs the mark's
    silhouette rather than sitting in a box behind it. */
 #coin-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;
-  filter:drop-shadow(0 0 5px rgba(255,46,46,.32))
-         drop-shadow(0 0 14px rgba(255,46,46,.17))
-         drop-shadow(0 0 32px rgba(255,46,46,.08))}
+  filter:drop-shadow(0 0 4px rgba(255,46,46,.17))
+         drop-shadow(0 0 11px rgba(255,46,46,.08))
+         drop-shadow(0 0 24px rgba(255,46,46,.035))}
 .coin-fallback{position:absolute;inset:12%;display:none;animation:spinfb 6s linear infinite}
 @keyframes spinfb{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
 .coin-stage.no3d .coin-fallback{display:block}
@@ -835,6 +835,10 @@ const CHAIN = [
 
   let spinVel = IDLE, dragging = false, armed = false, face = 0;
   let lastX = 0, lastT = 0, dragVel = 0;
+  /* a whip has to be a real gesture, not one stray event: several moves AND
+     real distance, on top of the release-speed threshold */
+  let moves = 0, dist = 0;
+  const MIN_MOVES = 3, MIN_DIST = 40;
 
   const setFace = f => {
     face = f;
@@ -848,6 +852,7 @@ const CHAIN = [
     stage.classList.add('grabbing');
     try { stage.setPointerCapture(e.pointerId); } catch(_) {}
     lastX = e.clientX; lastT = performance.now(); dragVel = 0;
+    moves = 0; dist = 0;
     e.preventDefault();
   });
   stage.addEventListener('pointermove', e => {
@@ -855,6 +860,7 @@ const CHAIN = [
     const now = performance.now();
     const dAng = (e.clientX - lastX) * PX2RAD;
     const dt = Math.max(8, now - lastT) / 1000;
+    moves++; dist += Math.abs(e.clientX - lastX);
     group.rotation.y += dAng;
     dragVel = dragVel * .4 + (dAng / dt) * .6;   // smoothed, so one jittery event cannot fake a whip
     lastX = e.clientX; lastT = now;
@@ -864,7 +870,8 @@ const CHAIN = [
     dragging = false;
     stage.classList.remove('grabbing');
     spinVel = Math.max(-45, Math.min(45, dragVel));
-    if(Math.abs(spinVel) > WHIP) armed = true;   // swap at the next edge-on
+    if(Math.abs(spinVel) > WHIP && moves >= MIN_MOVES && dist >= MIN_DIST)
+      armed = true;                              // swap at the next edge-on
   };
   stage.addEventListener('pointerup', release);
   stage.addEventListener('pointercancel', release);
